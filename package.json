@@ -1,0 +1,17 @@
+{
+  "name": "autorepo-worker",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240722.0",
+    "itty-router": "^3.0.12",
+    "typescript": "^5.5.2",
+    "wrangler": "^3.60.3"
+  }
+}
