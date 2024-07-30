@@ -107,13 +107,50 @@ function repo_allowed(url) {
 }
 
 /*
+ * Method to get all of the currently allowable keys from the Repository Variables on AutoRepo
+ * @param env Environment Variables from worker request
+ * @returns instanceof Response Error Response
+ * @returns {string:string} Array of keys
+ */
+async function get_allowed_keys(env) {
+    // Get valid Keys from AutoRepo's Variables
+    let keys_request = new Request(keys_url);
+    keys_request.headers.set('User-Agent', 'AutoRepo-Worker');
+    keys_request.headers.set('Accept', 'application/vnd.github+json');
+    keys_request.headers.set('Authorization', 'Bearer ' + env.Read_Keys);
+    keys_request.headers.set('X-GitHub-Api-Version', '2022-11-28');
+    let keys_response = await fetch(keys_request);
+    if (keys_response.status !== 200) {
+        // todo: report as a github bot error
+        return new Response("{'error': 'Broken GitHub Secrets', 'errorDetails': '" + await keys_response.text() + "'}");
+    }
+
+    // Parse the Keys from the Repository Variables
+    let keys = {};
+    let keys_json = await keys_response.json();
+    keys_json = keys_json["variables"];
+    for (let key in keys_json) {
+        key = keys_json[key];
+        keys[key["name"]] = key["value"];
+    }
+
+    if (keys === {}) {
+        // todo: report as a github bot error
+        return new Response("{'error': 'No GitHub Secrets'}");
+    }
+
+    return keys;
+}
+
+/*
  * Method to call the majority of the methods above, searching for the desired triggers,
- * and forming a standard struct to create a buil-triggering commen with.
+ * and forming a standard struct to create a buil-triggering comment with.
+ * @param used_key The owner of the key that was used
  * @param url The URL from Cloudflare built into a URL object
  * @param payload The body of the request from GitHub
- * @return Trigger Struct
+ * @return {string:string} Trigger Structure
  */
-function parse_trigger(url, payload) {
+function parse_trigger(used_key, url, payload) {
     // URL Parts
     let endpoint = url.pathname;
     let destination = getURLParts(endpoint);
@@ -132,6 +169,7 @@ function parse_trigger(url, payload) {
     
     // Build base trigger data
     let trigger = {
+        key_owner: used_key,
         target_repo: destination[0],
         target_name: null,
         branch_main: null,
@@ -169,29 +207,13 @@ async function handleRequest(request, env) {
         return new Response("{'error': 'Non-Permissible Origin'}");
     
     // Get valid Keys from AutoRepo's Variables
-    let keys_request = new Request(keys_url);
-    keys_request.headers.set('User-Agent', 'AutoRepo-Worker');
-    keys_request.headers.set('Accept', 'application/vnd.github+json');
-    keys_request.headers.set('Authorization', 'Bearer ' + env.Read_Keys);
-    keys_request.headers.set('X-GitHub-Api-Version', '2022-11-28');
-    let keys_response = await fetch(keys_request);
-    if (keys_response.status != 200) {
-        // todo: report as a github bot error
-        return new Response("{'error': 'Broken GitHub Secrets', 'errorDetails': '" + await keys_response.text() + "'}");
-    }
+    let keys = await get_allowed_keys(env);
+    if (keys instanceof Response)
+        return keys;
 
-    // Parse the Keys from the Repository Variables
-    let keys = {};
-    let keys_json = await keys_response.json();
-    keys_json = keys_json["variables"];
-    for (let key in keys_json) {
-        key = keys_json[key];
-        keys[key["name"]] = key["value"];
-    }
-    
     // Verify secrets sent against those from AutoRepo
     let payload = JSON.stringify(await request.json());
-    let used_key = ['unknown', '<unknown>'];
+    let used_key = 'unknown';
     let any_verified = false;
     for (let key in keys) {
         let name = key;
@@ -204,7 +226,7 @@ async function handleRequest(request, env) {
         );
         // Save it if it passes
         if (verified) {
-            used_key = [name, key];
+            used_key = name;
             any_verified = true;
             break;
         }
@@ -219,30 +241,13 @@ async function handleRequest(request, env) {
         return new Response("{'error': 'Non-Permissible Repository'}");
     
     // Parse request
-    let trigger_data = parse_trigger(url, payload);
+    let trigger_data = parse_trigger(used_key, url, payload);
+    if (trigger_data instanceof Response)
+        return trigger_data;
 
     console.info(
       trigger_data,
     );
-
-	/*
-    let riotRequest = new Request(fullUrl, request);
-    riotRequest.headers.set('X-Riot-Token', env.riot_key);
-    let response = await fetch(riotRequest, {
-        cf: {
-            cacheTtlByStatus: { "200-299": 1, "400-599": 0 },
-            cacheEverything: true,
-        }
-    });
-    
-    if (response.status == 400) {
-      return new Response(
-            '["error", "400-series", "Wrong region: try continent (or, wrong parameters: check docs)", '
-            + '"' + region + '", "' + fullUrl + '"]',
-            null
-        );
-    }
-    */
 
     // Recreate the response so we can modify the headers
 	let response = new Response(JSON.stringify(trigger_data));
