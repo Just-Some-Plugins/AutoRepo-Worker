@@ -168,32 +168,49 @@ async function handleRequest(request, env) {
         request.url.indexOf("trigger") === -1)
         return new Response("{'error': 'Non-Permissible Origin'}");
     
-    // todo: get keys from AutoRepo here
     // Get valid Keys from AutoRepo's Variables
     let keys_request = new Request(keys_url);
+    keys_request.headers.set('User-Agent', 'AutoRepo-Worker');
+    keys_request.headers.set('Accept', 'application/vnd.github+json');
     keys_request.headers.set('Authorization', 'Bearer ' + env.Read_Keys);
     keys_request.headers.set('X-GitHub-Api-Version', '2022-11-28');
-    let keys_response = await fetch(keys_request, {
-        cf: {
-            cacheTtlByStatus: { "200-299": 1, "400-599": 0 },
-            cacheEverything: true,
-        }
-    });
+    let keys_response = await fetch(keys_request);
+    if (keys_response.status != 200) {
+        // todo: report as a github bot error
+        return new Response("{'error': 'Broken GitHub Secrets', 'errorDetails': '" + await keys_response.text() + "'}");
+    }
+
     // Parse the Keys from the Repository Variables
-    if (keys_response.status === 200) {
-        let keys = await keys_response.json();
-        console.log(keys);
+    let keys = {};
+    let keys_json = await keys_response.json();
+    keys_json = keys_json["variables"];
+    for (let key in keys_json) {
+        key = keys_json[key];
+        keys[key["name"]] = key["value"];
     }
     
-    // Verify secrets sent against those in AutoRepo
+    // Verify secrets sent against those from AutoRepo
     let payload = JSON.stringify(await request.json());
-    let verified = await verifySignature(
-        'test-secret',
-        request.headers.get("x-hub-signature-256"),
-        payload
-    );
+    let used_key = ['unknown', '<unknown>'];
+    let any_verified = false;
+    for (let key in keys) {
+        let name = key;
+        key = keys[key];
+        // Try to verify this key
+        let verified = await verifySignature(
+            key,
+            request.headers.get("x-hub-signature-256"),
+            payload
+        );
+        // Save it if it passes
+        if (verified) {
+            used_key = [name, key];
+            any_verified = true;
+            break;
+        }
+    }
     // Reject nonmatching secrets
-    if (!verified)
+    if (!any_verified)
         return new Response("{'error': 'Non-Permissible Key'}");
     
     // Reject nonexistant repo options
