@@ -169,6 +169,21 @@ async function handleRequest(request, env) {
         return new Response("{'error': 'Non-Permissible Origin'}");
     
     // todo: get keys from AutoRepo here
+    // Get valid Keys from AutoRepo's Variables
+    let keys_request = new Request(keys_url);
+    keys_request.headers.set('Authorization', 'Bearer ' + env.Read_Keys);
+    keys_request.headers.set('X-GitHub-Api-Version', '2022-11-28');
+    let keys_response = await fetch(keys_request, {
+        cf: {
+            cacheTtlByStatus: { "200-299": 1, "400-599": 0 },
+            cacheEverything: true,
+        }
+    });
+    // Parse the Keys from the Repository Variables
+    if (keys_response.status === 200) {
+        let keys = await keys_response.json();
+        console.log(keys);
+    }
     
     // Verify secrets sent against those in AutoRepo
     let payload = JSON.stringify(await request.json());
