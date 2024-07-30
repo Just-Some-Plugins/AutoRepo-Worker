@@ -1,5 +1,6 @@
 /*
- * Copyright 2024 Ethan Henderson (zbee)
+ * AutoRepo-Worker: a worker script to trigger GitHub builds with Webhooks.
+ * Copyright (C) 2024  Ethan Henderson (zbee) <ethan@zbee.codes>
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
