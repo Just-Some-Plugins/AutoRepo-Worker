@@ -14,9 +14,14 @@
  */
 
 /*
+ * Version of script to refer to
+ */
+const version = "0.0.1 alecto";
+
+/*
  * URL to Repo with Repository Variables that are users' keys
  */
-let keys_url = "https://api.github.com/repos/Just-Some-Plugins/AutoRepo/actions/variables";
+const keys_url = "https://api.github.com/repos/Just-Some-Plugins/AutoRepo/actions/variables";
 
 /*
  * Method to verify the secret sent with the hook matches one of the keys along with the payload
@@ -198,6 +203,7 @@ function parse_trigger(used_key, url, payload) {
 
   // Build base trigger data
   let trigger = {
+    worker_version: version,
     key_owner: used_key,
     target_repo: destination[0],
     target_name: null,
