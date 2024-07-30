@@ -14,7 +14,10 @@ the fork and build it, then push the built fork to AutoRepo-Web to go into a Cus
 ---
 
 > [!TIP]
-> This code should only ever need to change with Github Webhook, Github API, or Discord Webhook changes.
+> This code should only ever need to change with
+> - [Github Webhook changes](https://github.blog/changelog/label/webhooks/),
+> - [Github API changes](https://github.blog/changelog/label/api,apis/), or
+> - [Discord Webhook changes](https://discord.com/developers/docs/change-log).
 
 ---
 
