@@ -1,7 +1,23 @@
-let headers = new Headers();
-let encoder = new TextEncoder();
 
+/*
+ * Options available for target repository destinations
+ */
+const allowed_repos = [ "jsp", "zbee", "individual" ];
+
+/*
+ * URL to Repo with Repository Variables that are users' keys
+ */
+let keys_url = "https://api.github.com/repos/Just-Some-Plugins/AutoRepo/actions/variables";
+
+/*
+ * Method to verify the secret sent with the hook matches one of the keys along with the payload
+ * @param secret A key the hashed secret should equal
+ * @param header The hashed secret+payload sent with the hook
+ * @param payload The request body that when paired with the secret should equal what GitHub sent
+ * @returns <boolean> of whether the secret equals the key used to generate what GitHub sent
+ */
 async function verifySignature(secret, header, payload) {
+    let encoder = new TextEncoder();
     let parts = header.split("=");
     let sigHex = parts[1];
 
@@ -29,6 +45,11 @@ async function verifySignature(secret, header, payload) {
     return equal;
 }
 
+/*
+ * Method to convert hashed hex to byte data for comparison
+ * @parm hex The hash hex to convert back to byte data
+ * @returns Uint8Array of bytes
+ */
 function hexToBytes(hex) {
     let len = hex.length / 2;
     let bytes = new Uint8Array(len);
@@ -44,6 +65,11 @@ function hexToBytes(hex) {
     return bytes;
 }
 
+/*
+ * Method to treat URL after the TLD as a /-separated list, and break it apart
+ * @param inputString The URL string after the TLD
+ * @returns string[] An empty Array, or an array of strings that were separated by /s before
+ */
 function getURLParts(inputString) {
   // Remove leading and trailing slashes (if any)
   const cleanedString = inputString.replace(/^\/|\/$/g, '');
@@ -64,8 +90,11 @@ function getURLParts(inputString) {
   }
 }
 
-const allowed_repos = [ "jsp", "zbee", "individual" ];
-
+/*
+ * Method to search for allowed repository labels within the parts of the URL
+ * @param url The URL string after the TLD
+ * @returns boolean If there was at least 1 allowed repository label
+ */
 function repo_allowed(url) {
     const urlParts = getURLParts(url);
 
@@ -77,6 +106,13 @@ function repo_allowed(url) {
     return false;
 }
 
+/*
+ * Method to call the majority of the methods above, searching for the desired triggers,
+ * and forming a standard struct to create a buil-triggering commen with.
+ * @param url The URL from Cloudflare built into a URL object
+ * @param payload The body of the request from GitHub
+ * @return Trigger Struct
+ */
 function parse_trigger(url, payload) {
     // URL Parts
     let endpoint = url.pathname;
