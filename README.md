@@ -2,7 +2,7 @@
 
 This script is designed to get around the limitation in GitHub building where an action in one repository
 cannot be triggered by another repository.
-This limitation combined with the inability to easily add action to a contribution-focused fork of a plugin
+This limitation combined with the inability to easily add actions to a contribution-focused fork of a plugin (you would have to constantly remove them)
 makes it difficult to auto-build your fork for tester's to use.
 
 This worker script can receive webhooks from such forks, with a key stored in
