@@ -6,10 +6,10 @@ This limitation combined with the inability to easily add actions to a contribut
 makes it difficult to auto-build your fork for tester's to use.
 
 This [worker](https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production)
-script can receive webhooks from such forks, with a key stored in
+script can receive webhooks from such forks of plugin repositories, with a key stored in
 [AutoRepo's Repository Variables](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions),
 and then comment on [an issue](https://github.com/Just-Some-Plugins/AutoRepo/issues/1) on
-[AutoRepo](https://github.com/Just-Some-Plugins/AutoRepo), to trigger a build there - which will fetch
+[AutoRepo](https://github.com/Just-Some-Plugins/AutoRepo), to trigger a build of the plugn there - which will fetch
 the fork and build it, then push the built fork to AutoRepo-Web to go into a Custom Repo.
 
 ---
