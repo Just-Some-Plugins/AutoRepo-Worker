@@ -14,6 +14,15 @@ the fork and build it, then push the built fork to AutoRepo-Web to go into a Cus
 
 ---
 
+These Environment Variables are required to be present on the worker.
+
+| Variable Name | Value | Link |
+| --- | --- | --- |
+| Read_Keys | Fine-Grained PAT with Repository: Variables: Read, on AutoRepo | [->](https://github.com/settings/personal-access-tokens/3693504) |
+| Issue_Comment | Fine-Grained PAT with Repository: Issues: Read and Write, on AutoRepo | [->](https://github.com/settings/personal-access-tokens/3693515) |
+
+---
+
 > [!TIP]
 > This code should only ever need to change with
 > - [Github Webhook changes](https://github.blog/changelog/label/webhooks/),
