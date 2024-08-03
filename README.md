@@ -35,6 +35,9 @@ worker.
 These Actions Variables are required to be present on 
 AutoRepo, the repository that the worker is triggering builds on.
 
+Setup under `Secrets and Variables` > `Actions` > `Variables` in
+the repository settings.
+
 | Variable Name           | Value                                                                                                                                         | Link                                                                                                   |
 |-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
 | ALLOWED_REPOS           | A comma-separated list of plugin repository choices allowed. Spaces/line-breaks permitted                                                     | [->](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS)           |
@@ -55,8 +58,9 @@ testing: -
 ```
 
 #### Key example
-Setup under `Secrets and Variables` > `Actions` > `Variables` in 
-the repository settings.
+Yes, ideally keys would be secrets instead of variables, but 
+it is not possible to read secrets via the GitHub API.
+
 > *Variable name:* `zbee`, 
 `zbee__fork`
 > 
