@@ -18,7 +18,11 @@ trigger a build of the plugin there - which will fetch the
 fork and build it, then push the built fork to AutoRepo-Web 
 to go into a Custom Repo.
 
+<details><summary>
+
 ## Setup
+
+</summary>
 
 ### Worker Variables
 
@@ -73,6 +77,8 @@ So, `zbee__fork` is another key for `zbee`.
 And because in `ALLOWED_REPOS_FOR_USERS` `zbee` has `*` 
 access in the above example, `zbee` and `zbee__fork` keys can 
 both be used to access any plugin repository.
+
+</details>
 
 ---
 
