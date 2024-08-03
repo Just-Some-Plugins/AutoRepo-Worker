@@ -184,14 +184,48 @@ async function get_allowed_keys(env) {
     return keys;
 }
 
-/*
- * Method to call the majority of the methods above, searching for the desired triggers,
- * and forming a standard struct to create a buil-triggering comment with.
- * @param used_key The owner of the key that was used
- * @param url The URL from Cloudflare built into a URL object
- * @param payload The body of the request from GitHub
- * @returns instanceof Response Error Response
- * @return {string:string} Trigger Structure
+/**
+ * Method to verify the key used in the request is one of the
+ * valid keys
+ * @param keys {{}} The keys from the AutoRepo repository,
+ * from get_allowed_keys()
+ * @param request {Request} The request from the worker
+ * @param payload {string} The body of the request from GitHub
+ * @returns {Promise<Response|string>} error Response or used
+ * key's name
+ */
+async function verify_key(keys, request, payload) {
+    for (let key in keys) {
+        let name = key; // key's name
+        key = keys[key]; // actual key
+
+        // Skip meta variables
+        if (key === "ALLOWED_REPOS" || key === "ALLOWED_REPOS_FOR_USERS")
+            continue;
+
+        // Try to verify this key
+        let verified = await verifySignature(
+            key,
+            request.headers.get("x-hub-signature-256"),
+            payload
+        );
+        // Save it if it passes
+        if (verified)
+            return name;
+    }
+
+    return new Response("{'error': 'Non-Permissible Key'}");
+}
+
+/**
+ * Method to call the majority of the methods above,
+ * searching for the desired triggers, and forming a standard
+ * struct to create a build-triggering comment with.
+ * @param used_key {string} The owner of the key that was used
+ * @param url {URL} The URL from Cloudflare built into a URL
+ * object
+ * @param payload {string} The body of the request from GitHub
+ * @returns {Response|{}} error Response or object of trigger data
  */
 function parse_trigger(used_key, url, payload) {
     // URL Parts
@@ -255,29 +289,13 @@ async function handleRequest(request, env) {
     if (keys instanceof Response)
         return keys;
 
-  // Verify secrets sent against those from AutoRepo
-  let payload = JSON.stringify(await request.json());
-  let used_key = 'unknown';
-  let any_verified = false;
-  for (let key in keys) {
-    let name = key;
-    key = keys[key];
-    // Try to verify this key
-    let verified = await verifySignature(
-      key,
-      request.headers.get("x-hub-signature-256"),
-      payload
-    );
-    // Save it if it passes
-    if (verified) {
-      used_key = name;
-      any_verified = true;
-      break;
-    }
-  }
-  // Reject nonmatching secrets
-  if (!any_verified)
-    return new Response("{'error': 'Non-Permissible Key'}");
+    // Verify secrets sent against those from AutoRepo
+    let payload = JSON.stringify(await request.json());
+    let used_key = await verify_key(keys, request, payload);
+    if (used_key instanceof Response)
+        return used_key;
+
+    // Check if the repo is allowed for the key
 
 
     // Reject nonexistent repo options
