@@ -18,6 +18,49 @@ trigger a build of the plugin there - which will fetch the
 fork and build it, then push the built fork to AutoRepo-Web 
 to go into a Custom Repo.
 
+## Usage
+
+To use this script, you need to set up a webhook on your 
+plugin's repository.
+
+1. Go to your repository's settings.
+2. Go to `Webhooks`.
+3. Click `Add webhook`.
+4. Set the `Payload URL` to `https://autorepo-worker.zbee.codes/trigger/...`
+   - Replace the `...` with your desired variables from below.
+5. Set the `Content type` to `application/json`.
+6. Set the `Secret` to the key you were given.
+   - Your key must have access to the repos you attempt to 
+     trigger [here](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS_FOR_USERS)
+     in `ALLOWED_REPOS_FOR_USERS`.
+7. Select `Let me select individual events` and select 
+   `Branch or tag creation`.
+8. Click `Add webhook`.
+
+### Hook URL Variables
+
+`/trigger/<repo>[/<repo2>[/<repo3>...]][?target_name=<name>][&main=<branch>][&test=<branch>]`
+
+- You can have a singular repo be triggered, eg
+  `/trigger/jsp`, or multiple repos, eg `/trigger/jsp/individual`.
+- You can set the get parameter `target_name` to the
+  desired name of your plugin, eg `/trigger/jsp?target_name=My Plugin`.
+    -  The repos you want to trigger must already exist
+       [here](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS)
+       in `ALLOWED_REPOS`.
+- You can set the get parameter `main` to the branch in
+  your plugin's repository that should be the live version
+  of the plugin, eg `/trigger/jsp?main=main`. This is
+  assumed to be `main` if `main` and `test` are not set.
+- You can set the get parameter `test` to the branch in
+  your plugin's repository that should be the test version
+  of the plugin, eg `/trigger/jsp?test=dev`.
+
+**Some examples:**
+> https://autorepo-worker.zbee.codes/trigger/jsp?target_name=MyPlugin&test=dev
+> 
+> https://autorepo-worker.zbee.codes/trigger/jsp/individual?main=drk_tests
+
 <details><summary>
 
 ## Setup
