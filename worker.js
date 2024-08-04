@@ -342,7 +342,7 @@ function parse_trigger(used_key, url, payload) {
     // Build base trigger data
     let trigger = {
         worker_version: version,
-        key_owner: used_key,
+        key_owner: used_key.charAt(0) + used_key.slice(1).toLowerCase(),
         target_repo: destination.join(','),
         target_name: null,
         branch_main: null,
