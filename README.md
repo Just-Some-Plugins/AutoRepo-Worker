@@ -26,7 +26,7 @@ to go into a Custom Repo.
 
 </summary>
 
-To use this script, you need to set up a webhook on your 
+To use this worker, you need to set up a webhook on your 
 plugin's repository.
 
 1. Go to your repository's settings.
