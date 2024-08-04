@@ -346,7 +346,8 @@ function parse_trigger(used_key, url, payload) {
     if ("main" in getParams)
         trigger["branch_main"] = getParams["main"];
     if ("test" in getParams)
-        trigger["branch_test"] = getParams["main"];
+        trigger["branch_test"] = getParams["test"];
+    // Fallback to make sure a branch is specified
     if (!("test" in getParams) && !("main" in getParams))
         trigger["branch_main"] = "main";
     // Get metadata
