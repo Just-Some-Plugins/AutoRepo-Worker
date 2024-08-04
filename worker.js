@@ -90,6 +90,7 @@ function hexToBytes(hex) {
 
     return bytes;
 }
+
 //endregion
 
 /**
@@ -120,7 +121,8 @@ function get_url_parts(inputString) {
 
 //region Key restrictions
 /**
- * Method to get all the currently allowable keys from the Repository Variables on AutoRepo
+ * Method to get all the currently allowable keys from the Repository Variables on
+ * AutoRepo
  * @param env Environment Variables from worker request
  * @returns {Promise<Response|{}>} awaited error Response or object of keys
  */
@@ -175,8 +177,9 @@ async function verify_key(keys, request, payload) {
         key = keys[key]; // actual key
 
         // Skip meta variables
-        if (key === "ALLOWED_REPOS" || key === "ALLOWED_REPOS_FOR_USERS")
+        if (key === "ALLOWED_REPOS" || key === "ALLOWED_REPOS_FOR_USERS") {
             continue;
+        }
 
         // Try to verify this key
         let verified = await verifySignature(
@@ -185,12 +188,14 @@ async function verify_key(keys, request, payload) {
             payload
         );
         // Save it if it passes
-        if (verified)
+        if (verified) {
             return name.toLowerCase();
+        }
     }
 
     return new Response("{'error': 'Non-Permissible Key'}");
 }
+
 //endregion
 
 //region Repository restrictions
@@ -206,10 +211,11 @@ function get_allowed_repos(keys) {
         let name = key.toLowerCase();
         let repos = keys[key].toLowerCase();
 
-        if (name === "allowed_repos")
+        if (name === "allowed_repos") {
             allowed_repos = (repos.split(',')).map(
                 part => part.replace(/(\r\n|\n|\r)/gm, "").trim()
             );
+        }
     }
 
     return allowed_repos;
@@ -235,8 +241,9 @@ function repo_allowed(url_parts, keys) {
     // Check each part against allowedRepos
     let all_parts_allowed = true;
     for (const part of url_parts)
-        if (!allowed_repos.includes(part))
+        if (!allowed_repos.includes(part)) {
             all_parts_allowed = false;
+        }
 
     return all_parts_allowed;
 }
@@ -270,18 +277,21 @@ function repo_allowed_for_key(url_parts, used_key, keys) {
                 let user_name = user_parts[0].replace(/(\r\n|\n|\r)/gm, "").trim();
 
                 // Skip other keys
-                if (user_name !== used_key.split('__')[0])
+                if (user_name !== used_key.split('__')[0]) {
                     continue;
+                }
 
                 // Get the allowed repos for the key owner
                 let user_allowances = user_parts[1].trim();
                 let user_allowed_repos = [];
-                if (user_allowances === "-")
+                if (user_allowances === "-") {
                     user_allowed_repos = [];
-                else if (user_allowances === "*")
+                } else if (user_allowances === "*") {
                     user_allowed_repos = allowed_repos;
-                else
-                    user_allowed_repos = user_allowances.split(',').map(part => part.trim());
+                } else {
+                    user_allowed_repos = user_allowances.split(',')
+                                                        .map(part => part.trim());
+                }
 
                 allowed_repos_for_key = user_allowed_repos;
             }
@@ -291,11 +301,13 @@ function repo_allowed_for_key(url_parts, used_key, keys) {
     // Check each part against allowed_repos_for_key
     let all_parts_allowed = true;
     for (const part of url_parts)
-        if (!allowed_repos_for_key.includes(part))
+        if (!allowed_repos_for_key.includes(part)) {
             all_parts_allowed = false;
+        }
 
     return all_parts_allowed;
 }
+
 //endregion
 
 /**
@@ -312,8 +324,9 @@ function parse_trigger(used_key, url, payload) {
     // URL Parts
     let endpoint = url.pathname;
     let destination = get_url_parts(endpoint);
-    if (destination.length < 1)
+    if (destination.length < 1) {
         return new Response("{'error': 'Non-Permissible Trigger'}");
+    }
 
     // URL parameters
     let getParams = {};
@@ -322,8 +335,9 @@ function parse_trigger(used_key, url, payload) {
 
     // Check Payload
     payload = JSON.parse(payload);
-    if (!("repository" in payload))
+    if (!("repository" in payload)) {
         return new Response("{'error': 'Unexpected Request Body'}");
+    }
 
     // Build base trigger data
     let trigger = {
@@ -374,8 +388,7 @@ async function post_comment_on_repo(trigger_data, env) {
             'Accept': 'application/vnd.github+json',
             'Authorization': 'Bearer ' + env.Issue_Comment,
             'X-GitHub-Api-Version': '2022-11-28',
-        },
-        body: JSON.stringify({
+        }, body: JSON.stringify({
             body: "Build triggered by **_"
                 + trigger_data.key_owner + "_**'s key for ["
                 // todo: split by __
@@ -393,18 +406,19 @@ async function post_comment_on_repo(trigger_data, env) {
                     : "")
                 + "\n\n\n"
                 + "<details><summary>Raw Trigger Data</summary>"
-                +"\n\n\n```json\n"
+                + "\n\n\n```json\n"
                 + JSON.stringify(trigger_data, null, 4)
                 + "\n```\n\n</details>"
                 + "\n\n> (worker version: <kbd>" + trigger_data.worker_version + "</kbd>)"
         })
     });
     let comment_response = await fetch(comment_request);
-    if (comment_response.status !== 201)
+    if (comment_response.status !== 201) {
         return new Response(
             "{'error': 'Broken GitHub Comment',"
             + "'errorDetails': '" + await comment_response.text() + "'}"
         );
+    }
 
     return await comment_response.json();
 }
@@ -421,49 +435,55 @@ async function handleRequest(request, env) {
         !request.headers.get("x-hub-signature-256") ||
         !request.headers.get("user-agent").startsWith("GitHub-Hookshot") ||
         !request.headers.get("x-hub-signature-256").startsWith("sha256=") ||
-        request.url.indexOf("trigger") === -1)
+        request.url.indexOf("trigger") === -1) {
         return new Response("{'error': 'Non-Permissible Origin'}");
+    }
     //endregion
 
     //region Key restrictions
     // Get valid Keys from AutoRepo's Variables
     let keys = await get_allowed_keys(env);
-    if (keys instanceof Response)
+    if (keys instanceof Response) {
         return keys;
+    }
 
     // Verify secrets sent against those from AutoRepo
     let payload = JSON.stringify(await request.json());
     let used_key = await verify_key(keys, request, payload);
-    if (used_key instanceof Response)
+    if (used_key instanceof Response) {
         return used_key;
+    }
     //endregion
 
     //region Repository restrictions
     // Reject nonexistent repo options
     const url = new URL(request.url);
     const url_parts = get_url_parts(url.pathname);
-    if (!repo_allowed(url_parts, keys))
+    if (!repo_allowed(url_parts, keys)) {
         return new Response("{'error': 'Non-Permissible Repository'}");
+    }
 
     // Check if the repo is allowed for the key
-    if (!repo_allowed_for_key(url_parts, used_key, keys))
+    if (!repo_allowed_for_key(url_parts, used_key, keys)) {
         return new Response(
             "{'error': 'Non-Permissible Repository for Key'," +
             "'key': '" + used_key + "'," +
             "'repos': '" + url_parts.join(', ') + "'}"
         );
+    }
     //endregion
 
     // Parse request
     let trigger_data = parse_trigger(used_key, url, payload);
-    if (trigger_data instanceof Response)
+    if (trigger_data instanceof Response) {
         return trigger_data;
+    }
 
     // todo: if repo is private, check if the bot has access to it
 
     // Create comment on AutoRepo
     let comment_response = await post_comment_on_repo(trigger_data, env);
-    if (comment_response instanceof Response)
+    if (comment_response instanceof Response) {
         return comment_response;
     trigger_data["comment_response"] = comment_response;
 
@@ -476,7 +496,10 @@ async function handleRequest(request, env) {
     let response = new Response(JSON.stringify(trigger_data, null, 4));
 
     // Set CORS headers
-    response.headers.set('Access-Control-Allow-Origin', request.headers.get('Origin'));
+    response.headers.set(
+        'Access-Control-Allow-Origin',
+        request.headers.get('Origin')
+    );
     // Append to/Add Vary header so browser will cache response correctly
     response.headers.append('Vary', 'Origin');
 
