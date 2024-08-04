@@ -28,6 +28,7 @@ const version = "0.0.1 alecto";
  */
 const keys_url = "https://api.github.com/repos/Just-Some-Plugins/AutoRepo/actions/variables";
 
+//region Worker restrictions
 /**
  * Method to verify the signature sent with the hook matches the secret
  * @param secret {string} to verify the signature against
@@ -55,14 +56,12 @@ async function verifySignature(secret, header, payload) {
 
     let sigBytes = hexToBytes(sigHex);
     let dataBytes = encoder.encode(payload);
-    let equal = await crypto.subtle.verify(
+    return await crypto.subtle.verify(
         algorithm.name,
         key,
         sigBytes,
         dataBytes,
     );
-
-    return equal;
 }
 
 /**
@@ -78,13 +77,13 @@ function hexToBytes(hex) {
     let index = 0;
     for (let i = 0; i < hex.length; i += 2) {
         let c = hex.slice(i, i + 2);
-        let b = parseInt(c, 16);
-        bytes[index] = b;
+        bytes[index] = parseInt(c, 16);
         index += 1;
     }
 
     return bytes;
 }
+//endregion
 
 /**
  * Method to treat URL after the TLD as a `/`-separated list,
@@ -93,9 +92,10 @@ function hexToBytes(hex) {
  * @returns {unknown[]|*[]} An empty Array, or an array of
  * strings that were separated by `/`s before
  */
-function getURLParts(inputString) {
+function get_url_parts(inputString) {
     // Remove leading and trailing slashes (if any)
-    const cleanedString = inputString.replace(/^\/|\/$/g, '');
+    let cleanedString = inputString.replace(/^\/|\/$/g, '');
+    cleanedString = cleanedString.toLowerCase();
 
     // Split the string by forward slashes
     const parts = cleanedString.split('/');
@@ -105,49 +105,13 @@ function getURLParts(inputString) {
 
     if (triggerIndex !== -1 && triggerIndex < parts.length - 1) {
         // Get non-empty values after "trigger"
-        const nonEmptyValues = parts.slice(triggerIndex + 1).filter(part => part.trim() !== '');
-
-        return nonEmptyValues;
+        return parts.slice(triggerIndex + 1).filter(part => part.trim() !== '');
     } else {
         return []; // No valid values found after "trigger"
     }
 }
 
-/**
- * Method to search for allowed repository labels within the
- * parts of the URL
- * @param url {string} The URL after the TLD
- * @param keys {{}} Output from get_allowed_keys()
- * @returns {Response|boolean} an error Response or boolean
- * of whether the repo is allowed
- */
-function repo_allowed(url, keys) {
-    const urlParts = getURLParts(url);
-
-    // Get the Allowed Repos from the ALLOWED_REPOS variable on AutoRepo
-    let allowed_repos = [];
-    for (let key in keys) {
-        let name = key;
-        let repos = keys[key];
-
-        if (name === "ALLOWED_REPOS")
-            allowed_repos = (repos.split(',')).map(part => part.replace(/(\r\n|\n|\r)/gm, "").trim());
-    }
-
-    // Report on now Allowed Repos
-    if (allowed_repos.length === 0) {
-        // todo: report as a github bot error
-        return new Response("{'error': 'No Permissible Repositories'}");
-    }
-
-    // Check each part against allowedRepos
-    for (const part of urlParts)
-        if (allowed_repos.includes(part))
-            return true;
-
-    return false;
-}
-
+//region Key restrictions
 /**
  * Method to get all the currently allowable keys from the Repository Variables on AutoRepo
  * @param env Environment Variables from worker request
@@ -211,11 +175,117 @@ async function verify_key(keys, request, payload) {
         );
         // Save it if it passes
         if (verified)
-            return name;
+            return name.toLowerCase();
     }
 
     return new Response("{'error': 'Non-Permissible Key'}");
 }
+//endregion
+
+//region Repository restrictions
+/**
+ * Method to get the allowed repositories from the keys
+ * @param keys {{}} Output from get_allowed_keys()
+ * @returns {*[]} An array of allowed repositories
+ */
+function get_allowed_repos(keys) {
+    // Get the Allowed Repos from the ALLOWED_REPOS variable on AutoRepo
+    let allowed_repos = [];
+    for (let key in keys) {
+        let name = key.toLowerCase();
+        let repos = keys[key].toLowerCase();
+
+        if (name === "allowed_repos")
+            allowed_repos = (repos.split(',')).map(
+                part => part.replace(/(\r\n|\n|\r)/gm, "").trim()
+            );
+    }
+
+    return allowed_repos;
+}
+
+/**
+ * Method to search for allowed repository labels within the
+ * parts of the URL
+ * @param url_parts {*[]} The URL parts after the TLD
+ * @param keys {{}} Output from get_allowed_keys()
+ * @returns {Response|boolean} an error Response or boolean
+ * of whether the repo is allowed
+ */
+function repo_allowed(url_parts, keys) {
+    let allowed_repos = get_allowed_repos(keys);
+
+    // Report on now Allowed Repos
+    if (allowed_repos.length === 0) {
+        // todo: report as a github bot error
+        return new Response("{'error': 'No Permissible Repositories'}");
+    }
+
+    // Check each part against allowedRepos
+    let all_parts_allowed = true;
+    for (const part of url_parts)
+        if (!allowed_repos.includes(part))
+            all_parts_allowed = false;
+
+    return all_parts_allowed;
+}
+
+/**
+ * Method to check if the repository is allowed for the key
+ * @param url_parts {*[]} The URL parts after the TLD
+ * @param used_key {string} The owner of the key that was used
+ * @param keys {{}} Output from get_allowed_keys()
+ * @returns {boolean} Whether the repo is allowed for the key
+ */
+function repo_allowed_for_key(url_parts, used_key, keys) {
+    used_key = used_key.toLowerCase();
+    let allowed_repos = get_allowed_repos(keys);
+
+    // Get the allowed repos for the used key
+    let allowed_repos_for_key = [];
+    for (let key in keys) {
+        let variable_name = key.toLowerCase();
+        let variable_value = keys[key];
+
+        // Find the allowed repos for each key
+        if (variable_name === "allowed_repos_for_users") {
+            // Split the repos into an array for each key
+            let values = variable_value.split('\n');
+            for (let value in values) {
+                value = values[value].toLowerCase();
+                let user_parts = value.split(':');
+
+                // Get the key owner name
+                let user_name = user_parts[0].replace(/(\r\n|\n|\r)/gm, "").trim();
+
+                // Skip other keys
+                if (user_name !== used_key.split('__')[0])
+                    continue;
+
+                // Get the allowed repos for the key owner
+                let user_allowances = user_parts[1].trim();
+                let user_allowed_repos = [];
+                if (user_allowances === "-")
+                    user_allowed_repos = [];
+                else if (user_allowances === "*")
+                    user_allowed_repos = allowed_repos;
+                else
+                    user_allowed_repos = user_allowances.split(',').map(part => part.trim());
+
+                allowed_repos_for_key = user_allowed_repos;
+            }
+        }
+    }
+
+    // Check each part against allowed_repos_for_key
+    let all_parts_allowed = true;
+    for (const part of url_parts)
+        if (!allowed_repos_for_key.includes(part))
+            all_parts_allowed = false;
+
+    return all_parts_allowed;
+}
+//endregion
 
 /**
  * Method to call the majority of the methods above,
@@ -230,7 +300,7 @@ async function verify_key(keys, request, payload) {
 function parse_trigger(used_key, url, payload) {
     // URL Parts
     let endpoint = url.pathname;
-    let destination = getURLParts(endpoint);
+    let destination = get_url_parts(endpoint);
     if (destination.length < 1)
         return new Response("{'error': 'Non-Permissible Trigger'}");
 
@@ -274,6 +344,7 @@ function parse_trigger(used_key, url, payload) {
 }
 
 async function handleRequest(request, env) {
+    //region Worker restrictions
     // Reject anything other than hookshot going to /trigger/
     if (!request.headers.get("user-agent") ||
         !request.headers.get("x-github-delivery") ||
@@ -283,7 +354,9 @@ async function handleRequest(request, env) {
         !request.headers.get("x-hub-signature-256").startsWith("sha256=") ||
         request.url.indexOf("trigger") === -1)
         return new Response("{'error': 'Non-Permissible Origin'}");
+    //endregion
 
+    //region Key restrictions
     // Get valid Keys from AutoRepo's Variables
     let keys = await get_allowed_keys(env);
     if (keys instanceof Response)
@@ -294,14 +367,23 @@ async function handleRequest(request, env) {
     let used_key = await verify_key(keys, request, payload);
     if (used_key instanceof Response)
         return used_key;
+    //endregion
 
-    // Check if the repo is allowed for the key
-
-
+    //region Repository restrictions
     // Reject nonexistent repo options
     const url = new URL(request.url);
-    if (!repo_allowed(url.pathname, keys))
+    const url_parts = get_url_parts(url.pathname);
+    if (!repo_allowed(url_parts, keys))
         return new Response("{'error': 'Non-Permissible Repository'}");
+
+    // Check if the repo is allowed for the key
+    if (!repo_allowed_for_key(url_parts, used_key, keys))
+        return new Response(
+            "{'error': 'Non-Permissible Repository for Key'," +
+            "'key': '" + used_key + "'," +
+            "'repos': '" + url_parts.join(', ') + "'}"
+        );
+    //endregion
 
     // Parse request
     let trigger_data = parse_trigger(used_key, url, payload);
@@ -309,6 +391,7 @@ async function handleRequest(request, env) {
         return trigger_data;
 
     console.info(
+        url_parts,
         trigger_data,
     );
 
