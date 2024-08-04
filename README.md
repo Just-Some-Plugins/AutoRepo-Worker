@@ -67,6 +67,30 @@ plugin's repository.
 
 <details><summary>
 
+### Troubleshooting Webhooks
+
+</summary>
+
+If you are having trouble with the webhook, you can refer to the
+Recent Deliveries section of your webhook's settings to see what
+the worker replied with.
+
+Additionally, you can check [the trigger log issue](https://github.com/Just-Some-Plugins/AutoRepo/issues/1)
+for the triggering data from the worker; specifically the 
+collapsed section `Raw Trigger Data` at the bottom of the 
+most recent comment regarding your plugin.
+
+You may also check the [latest build](https://github.com/Just-Some-Plugins/AutoRepo/actions)
+to see if the build script is failing for some reason with 
+your plugin.
+
+Finally, you can copy the link to the specific trigger log 
+comment and post a new issue to AutoRepo with the link.
+
+</details>
+
+<details><summary>
+
 ## Setup
 
 </summary>
