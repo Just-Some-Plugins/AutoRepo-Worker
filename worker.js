@@ -341,6 +341,8 @@ function parse_trigger(used_key, url, payload) {
 
     // Build out additional trigger data
     // Get branch data
+    // todo: read the branch from the payload, compare that
+    //  to test/main, which should be lists
     if ("main" in getParams)
         trigger["branch_main"] = getParams["main"];
     if ("test" in getParams)
@@ -375,6 +377,7 @@ async function post_comment_on_repo(trigger_data, env) {
         body: JSON.stringify({
             body: "Build triggered by **_"
                 + trigger_data.key_owner + "_**'s key for ["
+                // todo: split by __
                 + trigger_data.code_repo + "]("
                 + trigger_data.code_url + ")"
                 + (trigger_data.code_private ? " (private)" : "")
