@@ -53,8 +53,9 @@ plugin's repository.
   `/trigger/jsp`, or multiple repos, eg `/trigger/jsp/individual`.
 - You can set the get parameter `target_name` to the
   desired name of your plugin, eg `/trigger/jsp?
-  target_name=My Plugin`.
+  target_name=My_Plugin`.
     - This defaults to the name of the repo if not set.
+    - Underscores will be replaced with spaces.
     - The repos you want to trigger must already exist
        [here](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS)
        in `ALLOWED_REPOS`.
@@ -72,7 +73,7 @@ plugin's repository.
     (dev_branch)`.
 
 **Some examples:**
-> https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=MyPlugin&test=dev
+> https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=My_Plugin&test=dev
 > 
 > https://autorepo.jsp.zbee.codes/trigger/jsp/individual?main=drk_tests
 

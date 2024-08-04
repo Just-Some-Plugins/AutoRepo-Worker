@@ -363,7 +363,7 @@ function parse_trigger(used_key, url, payload) {
         key_owner: used_key.charAt(0).toUpperCase() + used_key.slice(1).toLowerCase(),
         target_repo: destination.join(','),
         target_name: "target_name" in getParams
-            ? getParams["target_name"]
+            ? getParams["target_name"].replace(/_/g, ' ')
             : payload["repository"]["name"],
         branch_main: null,
         branch_test: null,
