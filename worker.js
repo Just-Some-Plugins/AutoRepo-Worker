@@ -19,7 +19,7 @@
  * Name comes from https://en.wikipedia.org/wiki/List_of_bats
  * @type {string}
  */
-const version = "0.0.2 aequalis";
+const version = "0.0.3 pauci";
 
 /**
  * URL to the Repository with the Repository Variables that
