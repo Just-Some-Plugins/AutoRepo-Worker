@@ -448,8 +448,16 @@ async function post_comment_on_repo(trigger_data, env) {
 }
 
 async function handleRequest(request, env) {
-    //todo: route autorepo.jsp.zbee.codes to the worker github
-    //todo: route autorepo.jsp.zbee.codes/worker to the cloudflare
+    // redirect / to GitHub
+    if (request.url.indexOf("/trigger") === -1 &&
+        request.url.indexOf("/worker") === -1) {
+        return Response.redirect("https://github.com/Just-Some-Plugins/AutoRepo-Worker", 301);
+    }
+    // redirect /worker to Cloudflare
+    if (request.url.indexOf("/trigger") === -1 &&
+        request.url.indexOf("/worker") !== -1) {
+        return Response.redirect("https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production", 301);
+    }
 
     //region Worker restrictions
     // Reject anything other than hookshot going to /trigger/

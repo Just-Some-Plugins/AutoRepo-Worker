@@ -8,7 +8,7 @@ actions to a contribution-focused fork of a plugin (you would
 have to constantly remove them pre-PR),
 makes it difficult to auto-build your fork for tester's to use.
 
-This [worker](https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production)
+This [worker](https://autorepo.jsp.zbee.codes/worker)
 script can receive webhooks from such forks of plugin 
 repositories, with a key stored in
 [AutoRepo's Repository Variables](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions),
