@@ -339,6 +339,24 @@ function parse_trigger(used_key, url, payload) {
         return new Response("{'error': 'Unexpected Request Body'}");
     }
 
+    // Check payload if not enough data provided otherwise
+    let main_and_test_not_set = !("test" in getParams) && !("main" in getParams);
+    let branch = "";
+    if (!("ref" in payload)) {
+        if (main_and_test_not_set) {
+            return new Response("{'error': 'No Branch Provided'}");
+        } else {
+            if ("test" in getParams) {
+                branch = getParams["test"];
+            }
+            if ("main" in getParams) {
+                branch = getParams["main"];
+            }
+        }
+    } else {
+        branch = payload["ref"].substring(payload["ref"].lastIndexOf('/') + 1);
+    }
+
     // Build base trigger data
     let trigger = {
         worker_version: version,
@@ -353,7 +371,7 @@ function parse_trigger(used_key, url, payload) {
         code_private: payload["repository"]["private"],
         code_owner: payload["repository"]["owner"]["login"],
         code_url: payload["repository"]["html_url"],
-        code_branch: payload["ref"].split('/').pop(),
+        code_branch: branch,
     };
 
     // Build out additional trigger data
@@ -365,14 +383,12 @@ function parse_trigger(used_key, url, payload) {
         trigger["branch_test"] = getParams["test"];
     }
     // Fallback to make sure a branch is specified
-    if (!("test" in getParams) && !("main" in getParams)) {
+    if (main_and_test_not_set) {
         trigger["branch_main"] = trigger["code_branch"];
     }
-
     // Add branch to name when not main or test (or main and test not set)
     let branch_not_main_or_test = trigger["branch_main"] !== trigger["code_branch"]
         && trigger["branch_main"] !== trigger["code_branch"];
-    let main_and_test_not_set = !("test" in getParams) && !("main" in getParams);
     if (branch_not_main_or_test || main_and_test_not_set) {
         trigger["target_name"] = trigger["target_name"] + " (" + trigger["code_branch"] + ")";
     }
@@ -403,7 +419,7 @@ async function post_comment_on_repo(trigger_data, env) {
                 + "_**'s key for ["
                 + trigger_data.code_repo + "]("
                 + trigger_data.code_url + ")"
-                + ": `" + trigger_data.code_branch + "`"
+                + ":" + trigger_data.code_branch + ""
                 + (trigger_data.code_private ? " (private)" : "")
                 + ".\n\n"
                 + "- **Target Name**: `" + trigger_data.target_name + "`\n"
