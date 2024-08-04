@@ -410,6 +410,8 @@ async function post_comment_on_repo(trigger_data, env) {
 }
 
 async function handleRequest(request, env) {
+    //todo: route autorepo.jsp.zbee.codes to the worker config
+
     //region Worker restrictions
     // Reject anything other than hookshot going to /trigger/
     if (!request.headers.get("user-agent") ||
