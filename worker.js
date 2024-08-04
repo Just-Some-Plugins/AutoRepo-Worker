@@ -410,7 +410,9 @@ async function post_comment_on_repo(trigger_data, env) {
 }
 
 async function handleRequest(request, env) {
-    //todo: route autorepo.jsp.zbee.codes to the worker config
+    //todo: route autorepo.jsp.zbee.codes to the worker github
+    //todo: route https://autorepo.jsp.zbee.codes/worker to
+    // the Cloudflare worker
 
     //region Worker restrictions
     // Reject anything other than hookshot going to /trigger/
