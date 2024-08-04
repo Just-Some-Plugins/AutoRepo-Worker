@@ -20,7 +20,11 @@ to go into a Custom Repo.
 
 ## Usage
 
-<details><summary>Webhook Setup Instructions</summary>
+<details><summary>
+
+### Webhook Setup Instructions
+
+</summary>
 
 To use this script, you need to set up a webhook on your 
 plugin's repository.
