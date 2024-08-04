@@ -20,6 +20,8 @@ to go into a Custom Repo.
 
 ## Usage
 
+<details><summary>Webhook Setup Instructions</summary>
+
 To use this script, you need to set up a webhook on your 
 plugin's repository.
 
@@ -36,6 +38,8 @@ plugin's repository.
 7. Select `Let me select individual events` and select 
    `Branch or tag creation`.
 8. Click `Add webhook`.
+
+</details>
 
 ### Hook URL Variables
 
