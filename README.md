@@ -52,17 +52,24 @@ plugin's repository.
 - You can have a singular repo be triggered, eg
   `/trigger/jsp`, or multiple repos, eg `/trigger/jsp/individual`.
 - You can set the get parameter `target_name` to the
-  desired name of your plugin, eg `/trigger/jsp?target_name=My Plugin`.
-    -  The repos you want to trigger must already exist
+  desired name of your plugin, eg `/trigger/jsp?
+  target_name=My Plugin`.
+    - This defaults to the name of the repo if not set.
+    - The repos you want to trigger must already exist
        [here](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS)
        in `ALLOWED_REPOS`.
 - You can set the get parameter `main` to the branch in
   your plugin's repository that should be the live version
-  of the plugin, eg `/trigger/jsp?main=main`. This is
-  assumed to be `main` if `main` and `test` are not set.
+  of the plugin, eg `/trigger/jsp?main=main`. 
+  - This defaults to be the name of the branch that was 
+    pushed if `main` and `test` are not set.
 - You can set the get parameter `test` to the branch in
   your plugin's repository that should be the test version
   of the plugin, eg `/trigger/jsp?test=dev`.
+  - If you do not set `main` or `test`, or the branch that 
+    was pushed does not match either of them, `target_name` 
+    will have the branch name appended to it, eg `My Plugin 
+    (dev_branch)`.
 
 **Some examples:**
 > https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=MyPlugin&test=dev

@@ -344,29 +344,38 @@ function parse_trigger(used_key, url, payload) {
         worker_version: version,
         key_owner: used_key.charAt(0) + used_key.slice(1).toLowerCase(),
         target_repo: destination.join(','),
-        target_name: null,
+        target_name: "target_name" in getParams
+            ? getParams["target_name"]
+            : payload["repository"]["name"],
         branch_main: null,
         branch_test: null,
         code_repo: payload["repository"]["full_name"],
         code_private: payload["repository"]["private"],
         code_owner: payload["repository"]["owner"]["login"],
         code_url: payload["repository"]["html_url"],
+        code_branch: payload["ref"].split('/').pop(),
     };
 
     // Build out additional trigger data
     // Get branch data
-    // todo: read the branch from the payload, compare that
-    //  to test/main, which should be lists
-    if ("main" in getParams)
+    if ("main" in getParams) {
         trigger["branch_main"] = getParams["main"];
-    if ("test" in getParams)
+    }
+    if ("test" in getParams) {
         trigger["branch_test"] = getParams["test"];
+    }
     // Fallback to make sure a branch is specified
-    if (!("test" in getParams) && !("main" in getParams))
-        trigger["branch_main"] = "main";
-    // Get metadata
-    if ("target_name" in getParams && "individual" in destination)
-        trigger["target_name"] = getParams["target_name"];
+    if (!("test" in getParams) && !("main" in getParams)) {
+        trigger["branch_main"] = trigger["code_branch"];
+    }
+
+    // Add branch to name when not main or test (or main and test not set)
+    let branch_not_main_or_test = trigger["branch_main"] !== trigger["code_branch"]
+        && trigger["branch_main"] !== trigger["code_branch"];
+    let main_and_test_not_set = !("test" in getParams) && !("main" in getParams);
+    if (branch_not_main_or_test || main_and_test_not_set) {
+        trigger["target_name"] = trigger["target_name"] + " (" + trigger["code_branch"] + ")";
+    }
 
     return trigger;
 }
@@ -390,15 +399,14 @@ async function post_comment_on_repo(trigger_data, env) {
             'X-GitHub-Api-Version': '2022-11-28',
         }, body: JSON.stringify({
             body: "Build triggered by **_"
-                + trigger_data.key_owner + "_**'s key for ["
-                // todo: split by __
+                + trigger_data.key_owner.split('__')[0]
+                + "_**'s key for ["
                 + trigger_data.code_repo + "]("
                 + trigger_data.code_url + ")"
+                + ": `" + trigger_data.code_branch + "`"
                 + (trigger_data.code_private ? " (private)" : "")
                 + ".\n\n"
-                + (trigger_data.target_name !== null
-                    ? "- **Target Name**: `" + trigger_data.target_name + "`\n"
-                    : "")
+                + "- **Target Name**: `" + trigger_data.target_name + "`\n"
                 + "- **Target Repository**: `" + trigger_data.target_repo + "`\n"
                 + "- **Main Branch**: `" + trigger_data.branch_main + "`\n"
                 + (trigger_data.branch_test !== null
