@@ -493,7 +493,8 @@ async function handleRequest(request, env) {
     let comment_response = await post_comment_on_repo(trigger_data, env);
     if (comment_response instanceof Response) {
         return comment_response;
-    trigger_data["comment_response"] = comment_response;
+    }
+    trigger_data["github_comment_made"] = comment_response["html_url"];
 
     console.info(
         comment_response,
