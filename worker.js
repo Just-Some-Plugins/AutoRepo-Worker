@@ -28,6 +28,13 @@ const version = "0.0.1 alecto";
  */
 const keys_url = "https://api.github.com/repos/Just-Some-Plugins/AutoRepo/actions/variables";
 
+/**
+ * URL to the Issue to add a comment to in order to trigger a
+ * build
+ * @type {string}
+ */
+let comment_url = "https://api.github.com/repos/Just-Some-Plugins/AutoRepo/issues/1/comments";
+
 //region Worker restrictions
 /**
  * Method to verify the signature sent with the hook matches the secret
@@ -119,11 +126,15 @@ function get_url_parts(inputString) {
  */
 async function get_allowed_keys(env) {
     // Get valid Keys from AutoRepo's Variables
-    let keys_request = new Request(keys_url);
-    keys_request.headers.set('User-Agent', 'AutoRepo-Worker');
-    keys_request.headers.set('Accept', 'application/vnd.github+json');
-    keys_request.headers.set('Authorization', 'Bearer ' + env.Read_Keys);
-    keys_request.headers.set('X-GitHub-Api-Version', '2022-11-28');
+    let keys_request = new Request(keys_url, {
+        method: 'GET',
+        headers: {
+            'User-Agent': 'AutoRepo-Worker',
+            'Accept': 'application/vnd.github+json',
+            'Authorization': 'Bearer ' + env.Read_Keys,
+            'X-GitHub-Api-Version': '2022-11-28',
+        }
+    });
     let keys_response = await fetch(keys_request);
     if (keys_response.status !== 200) {
         // todo: report as a github bot error
@@ -318,7 +329,7 @@ function parse_trigger(used_key, url, payload) {
     let trigger = {
         worker_version: version,
         key_owner: used_key,
-        target_repo: destination[0],
+        target_repo: destination.join(','),
         target_name: null,
         branch_main: null,
         branch_test: null,
@@ -337,10 +348,61 @@ function parse_trigger(used_key, url, payload) {
     if (!("test" in getParams) && !("main" in getParams))
         trigger["branch_main"] = "main";
     // Get metadata
-    if ("target_name" in getParams && trigger.target_repo === "individual")
+    if ("target_name" in getParams && "individual" in destination)
         trigger["target_name"] = getParams["target_name"];
 
     return trigger;
+}
+
+/**
+ * Method to create a comment on the AutoRepo repository to
+ * trigger a build
+ * @param trigger_data {{}} The data to create the comment
+ * with, from parse_trigger()
+ * @param env {{}} Environment Variables from worker request
+ * @returns {Promise<Response|any>}
+ */
+async function post_comment_on_repo(trigger_data, env) {
+    //region Create Comment on AutoRepo
+    let comment_request = new Request(comment_url, {
+        method: 'POST',
+        headers: {
+            'User-Agent': 'AutoRepo-Worker',
+            'Accept': 'application/vnd.github+json',
+            'Authorization': 'Bearer ' + env.Issue_Comment,
+            'X-GitHub-Api-Version': '2022-11-28',
+        },
+        body: JSON.stringify({
+            body: "Build triggered by **_"
+                + trigger_data.key_owner + "_**'s key for ["
+                + trigger_data.code_repo + "]("
+                + trigger_data.code_url + ")"
+                + (trigger_data.code_private ? " (private)" : "")
+                + ".\n\n"
+                + (trigger_data.target_name !== null
+                    ? "- **Target Name**: `" + trigger_data.target_name + "`\n"
+                    : "")
+                + "- **Target Repository**: `" + trigger_data.target_repo + "`\n"
+                + "- **Main Branch**: `" + trigger_data.branch_main + "`\n"
+                + (trigger_data.branch_test !== null
+                    ? "- **Test Branch**: `" + trigger_data.branch_test + "`\n"
+                    : "")
+                + "\n\n\n"
+                + "<details><summary>Raw Trigger Data</summary>"
+                +"\n\n\n```json\n"
+                + JSON.stringify(trigger_data, null, 4)
+                + "\n```\n\n</details>"
+                + "\n\n> (worker version: <kbd>" + trigger_data.worker_version + "</kbd>)"
+        })
+    });
+    let comment_response = await fetch(comment_request);
+    if (comment_response.status !== 201)
+        return new Response(
+            "{'error': 'Broken GitHub Comment',"
+            + "'errorDetails': '" + await comment_response.text() + "'}"
+        );
+
+    return await comment_response.json();
 }
 
 async function handleRequest(request, env) {
@@ -390,13 +452,21 @@ async function handleRequest(request, env) {
     if (trigger_data instanceof Response)
         return trigger_data;
 
+    // todo: if repo is private, check if the bot has access to it
+
+    // Create comment on AutoRepo
+    let comment_response = await post_comment_on_repo(trigger_data, env);
+    if (comment_response instanceof Response)
+        return comment_response;
+    trigger_data["comment_response"] = comment_response;
+
     console.info(
-        url_parts,
+        comment_response,
         trigger_data,
     );
 
-    // Recreate the response so we can modify the headers
-    let response = new Response(JSON.stringify(trigger_data));
+    // Build response just for testing the worker
+    let response = new Response(JSON.stringify(trigger_data, null, 4));
 
     // Set CORS headers
     response.headers.set('Access-Control-Allow-Origin', request.headers.get('Origin'));
