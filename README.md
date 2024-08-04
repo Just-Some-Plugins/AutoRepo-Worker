@@ -26,7 +26,7 @@ plugin's repository.
 1. Go to your repository's settings.
 2. Go to `Webhooks`.
 3. Click `Add webhook`.
-4. Set the `Payload URL` to `https://autorepo-worker.zbee.codes/trigger/...`
+4. Set the `Payload URL` to `https://autorepo.jsp.zbee.codes/trigger/...`
    - Replace the `...` with your desired variables from below.
 5. Set the `Content type` to `application/json`.
 6. Set the `Secret` to the key you were given.
@@ -57,9 +57,9 @@ plugin's repository.
   of the plugin, eg `/trigger/jsp?test=dev`.
 
 **Some examples:**
-> https://autorepo-worker.zbee.codes/trigger/jsp?target_name=MyPlugin&test=dev
+> https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=MyPlugin&test=dev
 > 
-> https://autorepo-worker.zbee.codes/trigger/jsp/individual?main=drk_tests
+> https://autorepo.jsp.zbee.codes/trigger/jsp/individual?main=drk_tests
 
 <details><summary>
 
