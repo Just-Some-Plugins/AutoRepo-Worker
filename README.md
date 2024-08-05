@@ -69,8 +69,7 @@ plugin's repository.
   of the plugin, eg `/trigger/jsp?test=dev`.
   - If you do not set `main` or `test`, or the branch that 
     was pushed does not match either of them, `target_name` 
-    will have the branch name appended to it, eg `My Plugin 
-    (dev_branch)`.
+    will have the branch name appended to it, eg `My Plugin (dev_branch)`.
 
 **Some examples:**
 > https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=My_Plugin&test=dev
