@@ -374,6 +374,7 @@ function parse_trigger(used_key, url, payload) {
         code_owner: payload["repository"]["owner"]["login"],
         code_url: payload["repository"]["html_url"],
         code_branch: branch,
+        code_icon: "icon" in getParams ? getParams["icon"] : null,
     };
 
     // Build out additional trigger data
