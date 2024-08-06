@@ -58,16 +58,16 @@ https://autorepo.jsp.zbee.codes
                     [&icon=<link to icon png>]
 ```
 
-|               |     | Req                | Description                                                                                                                                                                          | Example                    |
-|---------------|-----|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
-| `repo`        | URL | :heavy_check_mark: | The name of the repo to trigger your plugin into.<br>The repos must be in [`ALLOWED_REPOS`](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS). | `/trigger/jsp`             |
-| other `repo`s | URL | :x:                | Additional repos to trigger.                                                                                                                                                         | `/trigger/jsp/zbee`  |
+|               |     | Req                | Description                                                                                                                                                                          | Example                  |
+|---------------|-----|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| `repo`        | URL | :heavy_check_mark: | The name of the repo to trigger your plugin into.<br>The repos must be in [`ALLOWED_REPOS`](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS). | `/trigger/jsp`           |
+| other `repo`s | URL | :x:                | Additional repos to trigger.                                                                                                                                                         | `/trigger/jsp/zbee`      |
 | `target_name` | GET | :white_circle:     | The name of your plugin.<br>Defaults to the name of your repo if not set.<br>Underscores will be replaced with spaces.<br>                                                           | `&target_name=My_Plugin` |
-| `main`        | GET | :white_circle:     | The branch that is the live version of the plugin.<br/>Defaults to the pushed branch if `main` and `test` are not set.                                                               | `&main=master`             |
-| `main_build`  | GET | :white_circle:     | The csproj build configuration to use for the main branch.<br/>Defaults to `Release`.                                                                                                | `&main_build=rel`          |
-| `test`        | GET | :x:                | The branch that is the test version of the plugin.                                                                                                                                   | `&test=testing`            |
-| `test_build`  | GET | :white_circle:     | The csproj build configuration to use for the test branch.<br/>Defaults to `Debug`.                                                                                                  | `&test_build=dev`          |
-| `icon`        | GET | :x:                | The URL of the PNG icon to use for the plugin.                                                                                                                                          | `&icon=https://...`        |
+| `main`        | GET | :white_circle:     | The branch that is the live version of the plugin.<br/>Defaults to the pushed branch if `main` and `test` are not set.                                                               | `&main=master`           |
+| `main_build`  | GET | :white_circle:     | The csproj build configuration to use for the main branch.<br/>Defaults to `Release`.                                                                                                | `&main_build=rel`        |
+| `test`        | GET | :x:                | The branch that is the test version of the plugin.                                                                                                                                   | `&test=testing`          |
+| `test_build`  | GET | :white_circle:     | The csproj build configuration to use for the test branch.<br/>Defaults to `Debug`.                                                                                                  | `&test_build=dev`        |
+| `icon`        | GET | :x:                | The URL of the PNG icon to use for the plugin.                                                                                                                                       | `&icon=https://...`      |
 
 - If you do not set `main` or `test`, or the branch that was 
   pushed does not match either of them, `target_name` will 
