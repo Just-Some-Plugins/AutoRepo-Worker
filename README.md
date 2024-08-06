@@ -53,6 +53,7 @@ plugin's repository.
                     [&main=<branch>][&test=<branch>]
                     [&main_build=<main's build configuration>]
                     [&test_build=<test's build configuration>]
+                    [&icon=<link to icon png>]
 ```
 
 |               |     | Req                | Description                                                                                                                                                                          | Example                    |
@@ -64,7 +65,7 @@ plugin's repository.
 | `main_build`  | GET | :white_circle:     | The csproj build configuration to use for the main branch.<br/>Defaults to `Release`.                                                                                                | `&main_build=rel`          |
 | `test`        | GET | :x:                | The branch that is the test version of the plugin.                                                                                                                                   | `&test=testing`            |
 | `test_build`  | GET | :white_circle:     | The csproj build configuration to use for the test branch.<br/>Defaults to `Debug`.                                                                                                  | `&test_build=dev`          |
-| `icon`        | GET | :x:                | The URL of the icon to use for the comment.                                                                                                                                          | `&icon=https://...`        |
+| `icon`        | GET | :x:                | The URL of the PNG icon to use for the plugin.                                                                                                                                          | `&icon=https://...`        |
 
 - If you do not set `main` or `test`, or the branch that was 
   pushed does not match either of them, `target_name` will 
