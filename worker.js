@@ -420,16 +420,21 @@ async function post_comment_on_repo(trigger_data, env) {
             body: "Build triggered by **_"
                 + trigger_data.key_owner.split('__')[0]
                 + "_**'s key for ["
-                + trigger_data.code_repo + "]("
-                + trigger_data.code_url + ")"
+                + trigger_data.code_repo
                 + ":" + trigger_data.code_branch + ""
+                + "]("
+                + trigger_data.code_url + "/tree/" + trigger_data.code_branch + ")"
                 + (trigger_data.code_private ? " (private)" : "")
                 + ".\n\n"
                 + "- **Target Name**: `" + trigger_data.target_name + "`\n"
                 + "- **Target Repository**: `" + trigger_data.target_repo + "`\n"
-                + "- **Main Branch**: `" + trigger_data.branch_main + "`\n"
+                + "- **Main Branch**: `" + trigger_data.branch_main + "`"
+                + " (build with `" + trigger_data.branch_main_build + "`)"
+                + "\n"
                 + (trigger_data.branch_test !== null
-                    ? "- **Test Branch**: `" + trigger_data.branch_test + "`\n"
+                    ? "- **Test Branch**: `" + trigger_data.branch_test + "`"
+                    + " (build with `" + trigger_data.branch_main_build + "`)"
+                    + "\n"
                     : "")
                 + "\n\n\n"
                 + "<details><summary>Raw Trigger Data</summary>"
