@@ -48,9 +48,11 @@ plugin's repository.
 ## Hook Variables
 
 ```
+https://autorepo.jsp.zbee.codes
 /trigger/<repo>[/<repo2>[/<repo3>...]]
                     [?target_name=<name>]
-                    [&main=<branch>][&test=<branch>]
+                    [&main=<branch>]
+                    [&test=<branch>]
                     [&main_build=<main's build configuration>]
                     [&test_build=<test's build configuration>]
                     [&icon=<link to icon png>]
