@@ -19,7 +19,7 @@
  * Name comes from https://en.wikipedia.org/wiki/List_of_bats
  * @type {string}
  */
-const version = "0.0.4 maculata";
+const version = "0.0.5 melano";
 
 /**
  * URL to the Repository with the Repository Variables that
