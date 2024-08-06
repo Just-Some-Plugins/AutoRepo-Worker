@@ -18,11 +18,11 @@ trigger a build of the plugin there - which will fetch the
 fork and build it, then push the built fork to AutoRepo-Web 
 to go into a Custom Repo.
 
-## Usage
+# Usage
 
-<details><summary>
+<blockquote><details><summary>
 
-### Webhook Setup Instructions
+## Webhook Setup Instructions
 
 </summary>
 
@@ -43,42 +43,40 @@ plugin's repository.
    `Branch or tag creation`.
 8. Click `Add webhook`.
 
-</details>
+</details></blockquote>
 
-### Hook URL Variables
+## Hook Variables
 
-`/trigger/<repo>[/<repo2>[/<repo3>...]][?target_name=<name>][&main=<branch>][&test=<branch>]`
+```
+/trigger/<repo>[/<repo2>[/<repo3>...]]
+                    [?target_name=<name>]
+                    [&main=<branch>][&test=<branch>]
+                    [&main_build=<main's build configuration>]
+                    [&test_build=<test's build configuration>]
+```
 
-- You can have a singular repo be triggered, eg
-  `/trigger/jsp`, or multiple repos, eg `/trigger/jsp/individual`.
-- You can set the get parameter `target_name` to the
-  desired name of your plugin, eg `/trigger/jsp?
-  target_name=My_Plugin`.
-    - This defaults to the name of the repo if not set.
-    - Underscores will be replaced with spaces.
-    - The repos you want to trigger must already exist
-       [here](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS)
-       in `ALLOWED_REPOS`.
-- You can set the get parameter `main` to the branch in
-  your plugin's repository that should be the live version
-  of the plugin, eg `/trigger/jsp?main=main`. 
-  - This defaults to be the name of the branch that was 
-    pushed if `main` and `test` are not set.
-- You can set the get parameter `test` to the branch in
-  your plugin's repository that should be the test version
-  of the plugin, eg `/trigger/jsp?test=dev`.
-  - If you do not set `main` or `test`, or the branch that 
-    was pushed does not match either of them, `target_name` 
-    will have the branch name appended to it, eg `My Plugin (dev_branch)`.
+|               |     | Req                | Description                                                                                                                                                                          | Example                    |
+|---------------|-----|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| `repo`        | URL | :heavy_check_mark: | The name of the repo to trigger your plugin into.<br>The repos must be in [`ALLOWED_REPOS`](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS). | `/trigger/jsp`             |
+| other `repo`s | URL | :x:                | Additional repos to trigger.                                                                                                                                                         | `/trigger/jsp/individual`  |
+| `target_name` | GET | :white_circle:     | The name of your plugin.<br>Defaults to the name of your repo if not set.<br>Underscores will be replaced with spaces.<br>                                                           | `?target_name=Sloth_Combo` |
+| `main`        | GET | :white_circle:     | The branch that is the live version of the plugin.<br/>Defaults to the pushed branch if `main` and `test` are not set.                                                               | `&main=master`             |
+| `main_build`  | GET | :white_circle:     | The csproj build configuration to use for the main branch.<br/>Defaults to `Release`.                                                                                                | `&main_build=rel`          |
+| `test`        | GET | :x:                | The branch that is the test version of the plugin.                                                                                                                                   | `&test=testing`            |
+| `test_build`  | GET | :white_circle:     | The csproj build configuration to use for the test branch.<br/>Defaults to `Debug`.                                                                                                  | `&test_build=dev`          |
+
+- If you do not set `main` or `test`, or the branch that was 
+  pushed does not match either of them, `target_name` will 
+  have the branch name appended to it, eg `My Plugin (dev_branch)`.
 
 **Some examples:**
 > https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=My_Plugin&test=dev
 > 
 > https://autorepo.jsp.zbee.codes/trigger/jsp/individual?main=drk_tests
 
-<details><summary>
+<blockquote><details><summary>
 
-### Troubleshooting Webhooks
+## Troubleshooting Webhooks
 
 </summary>
 
@@ -98,17 +96,15 @@ your plugin.
 Finally, you can copy the link to the specific trigger log 
 comment and post a new issue to AutoRepo with the link.
 
-</details>
-
----
+</details></blockquote>
 
 <details><summary>
 
-## Setup
+# Setup
 
 </summary>
 
-### Worker Variables
+## Worker Variables
 
 These Environment Variables are required to be present on the
 worker.
@@ -118,7 +114,7 @@ worker.
 | Read_Keys     | Fine-Grained PAT with Repository: Variables: Read, on AutoRepo        | [->](https://github.com/settings/personal-access-tokens/3693504) |
 | Issue_Comment | Fine-Grained PAT with Repository: Issues: Read and Write, on AutoRepo | [->](https://github.com/settings/personal-access-tokens/3693515) |
 
-### Repository Variables
+## Repository Variables
 
 These Actions Variables are required to be present on 
 AutoRepo, the repository that the worker is triggering builds on.
@@ -131,21 +127,21 @@ the repository settings.
 | ALLOWED_REPOS           | A comma-separated list of plugin repository choices allowed. Spaces/line-breaks permitted                                                     | [->](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS)           |
 | ALLOWED_REPOS_FOR_USERS | A line-break-separated list of key owner's names, a colon, then a comma-separated list of plugin repositories they can access, or `*` or `-`. | [->](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions/ALLOWED_REPOS_FOR_USERS) |
 
-#### `ALLOWED_REPOS` example
+### `ALLOWED_REPOS` example
 ```
 just-some-plugins,
 dev,
 zbee-personal
 ```
 
-#### `ALLOWED_REPOS_FOR_USERS` example
+### `ALLOWED_REPOS_FOR_USERS` example
 ```
 zbee: *
 alice: just-some-plugins, dev
 testing: -
 ```
 
-#### Key example
+### Key example
 Yes, ideally keys would be secrets instead of variables, but 
 it is not possible to read secrets via the GitHub API.
 
@@ -168,11 +164,9 @@ both be used to access any plugin repository.
 
 > [!TIP]
 > This code should only ever need to change with
-> - [Github Webhook changes](https://github.blog/changelog/label/webhooks/),
-> - [Github API changes](https://github.blog/changelog/label/api,apis/), or
+> - [GitHub Webhook changes](https://github.blog/changelog/label/webhooks/),
+> - [GitHub API changes](https://github.blog/changelog/label/api,apis/), or
 > - [Discord Webhook changes](https://discord.com/developers/docs/change-log).
-
----
 
     AutoRepo-Worker: a worker script to trigger GitHub builds with Webhooks.
     Copyright (C) 2024  Ethan Henderson (zbee) <ethan@zbee.codes>
