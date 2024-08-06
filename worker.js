@@ -360,7 +360,8 @@ function parse_trigger(used_key, url, payload) {
     // Build base trigger data
     let trigger = {
         worker_version: version,
-        key_owner: used_key.charAt(0).toUpperCase() + used_key.slice(1).toLowerCase(),
+        key_owner: used_key.charAt(0).toUpperCase() + used_key.slice(1)
+                                                              .toLowerCase(),
         target_repo: destination.join(','),
         target_name: "target_name" in getParams
             ? getParams["target_name"].replace(/_/g, ' ')
@@ -417,7 +418,9 @@ async function post_comment_on_repo(trigger_data, env) {
             'Authorization': 'Bearer ' + env.Issue_Comment,
             'X-GitHub-Api-Version': '2022-11-28',
         }, body: JSON.stringify({
-            body: "Build triggered by **_"
+            body:
+            // Build triggered by X's key for X/Y:Z.
+                "Build triggered by **_"
                 + trigger_data.key_owner.split('__')[0]
                 + "_**'s key for ["
                 + trigger_data.code_repo
@@ -425,21 +428,32 @@ async function post_comment_on_repo(trigger_data, env) {
                 + "]("
                 + trigger_data.code_url + "/tree/" + trigger_data.code_branch + ")"
                 + (trigger_data.code_private ? " (private)" : "")
+
                 + ".\n\n"
-                + "- **Target Name**: `" + trigger_data.target_name + "`\n"
-                + "- **Target Repository**: `" + trigger_data.target_repo + "`\n"
-                + "- **Main Branch**: `" + trigger_data.branch_main + "`"
-                + " (with `" + trigger_data.branch_main_build + "` config)"
+
+                // Target Name: X
+                + "- **Target Name**: `" + trigger_data.target_name + "`\n" //3
+                // Target Repository: X
+                + "- **Target Repository**: `" + trigger_data.target_repo + "`\n" //4
+                // Main Branch: X (with Y config)
+                + "- **Main Branch**: `"
+                + (trigger_data.branch_main !== null
+                    ? trigger_data.branch_main + "`" + " (with `" + trigger_data.branch_main_build + "` config)"
+                    : "<null>`")
                 + "\n"
+                // Test Branch: X (with Y config)
+                + "- **Test Branch**: `"
                 + (trigger_data.branch_test !== null
-                    ? "- **Test Branch**: `" + trigger_data.branch_test + "`"
-                    + " (with `" + trigger_data.branch_main_build + "` config)"+ "\n"
-                    : "")
+                    ? trigger_data.branch_test + "`" + " (with `" + trigger_data.branch_test_build + "` config)"
+                    : "<null>`")
+                + "\n"
+
                 + "\n\n\n"
                 + "<details><summary>Raw Trigger Data</summary>"
                 + "\n\n\n```json\n"
                 + JSON.stringify(trigger_data, null, 4)
                 + "\n```\n\n</details>"
+
                 + "\n\n> (worker version: <kbd>" + trigger_data.worker_version + "</kbd>)"
         })
     });
@@ -458,12 +472,18 @@ async function handleRequest(request, env) {
     // redirect / to GitHub
     if (request.url.indexOf("/trigger") === -1 &&
         request.url.indexOf("/worker") === -1) {
-        return Response.redirect("https://github.com/Just-Some-Plugins/AutoRepo-Worker", 301);
+        return Response.redirect(
+            "https://github.com/Just-Some-Plugins/AutoRepo-Worker",
+            301
+        );
     }
     // redirect /worker to Cloudflare
     if (request.url.indexOf("/trigger") === -1 &&
         request.url.indexOf("/worker") !== -1) {
-        return Response.redirect("https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production", 301);
+        return Response.redirect(
+            "https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production",
+            301
+        );
     }
 
     //region Worker restrictions
