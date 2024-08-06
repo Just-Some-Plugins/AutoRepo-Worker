@@ -366,7 +366,9 @@ function parse_trigger(used_key, url, payload) {
             ? getParams["target_name"].replace(/_/g, ' ')
             : payload["repository"]["name"],
         branch_main: null,
+        branch_main_build: "main" in getParams ? getParams["main"] : null,
         branch_test: null,
+        branch_test_build: "test" in getParams ? getParams["test"] : null,
         code_repo: payload["repository"]["full_name"],
         code_private: payload["repository"]["private"],
         code_owner: payload["repository"]["owner"]["login"],
