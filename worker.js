@@ -483,6 +483,13 @@ async function handleRequest(request, env) {
             301
         );
     }
+    // redirect /web to Just-Some-Plugins/AutoRepo-Web
+    if (request.url.indexOf("/web") !== -1) {
+        return Response.redirect(
+            "https://github.com/Just-Some-Plugins/AutoRepo-Web",
+            301
+        );
+    }
     // redirect / to Just-Some-Plugins/AutoRepo-Worker
     if (request.url.indexOf("/trigger") === -1) {
         return Response.redirect(
