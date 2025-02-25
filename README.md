@@ -8,7 +8,7 @@ actions to a contribution-focused fork of a plugin (you would
 have to constantly remove them pre-PR),
 makes it difficult to auto-build your fork for tester's to use.
 
-This [worker](https://autorepo.jsp.zbee.codes/worker)
+This [worker](https://autorepo.justsome.site/worker)
 script can receive webhooks from such forks of plugin 
 repositories, with a key stored in
 [AutoRepo's Repository Variables](https://github.com/Just-Some-Plugins/AutoRepo/settings/variables/actions),
@@ -32,7 +32,7 @@ plugin's repository.
 1. Go to your repository's settings.
 2. Go to `Webhooks`.
 3. Click `Add webhook`.
-4. Set the `Payload URL` to `https://autorepo.jsp.zbee.codes/trigger/...`
+4. Set the `Payload URL` to `https://autorepo.justsome.site/trigger/...`
    - Replace the `...` with your desired variables from below.
 5. Set the `Content type` to `application/json`.
 6. Set the `Secret` to the key you were given.
@@ -48,7 +48,7 @@ plugin's repository.
 ## Hook Variables
 
 ```
-https://autorepo.jsp.zbee.codes
+https://autorepo.justsome.site
 /trigger/<repo>[/<repo2>[/<repo3>...]]
                     [?target_name=<name>]
                     [&main=<branch>]
@@ -74,9 +74,9 @@ https://autorepo.jsp.zbee.codes
   have the branch name appended to it, eg `My Plugin (dev_branch)`.
 
 **Some examples:**
-> https://autorepo.jsp.zbee.codes/trigger/jsp?target_name=My_Plugin&test=dev
+> https://autorepo.justsome.site/trigger/jsp?target_name=My_Plugin&test=dev
 > 
-> https://autorepo.jsp.zbee.codes/trigger/jsp/individual?main=drk_tests
+> https://autorepo.justsome.site/trigger/jsp/individual?main=drk_tests
 
 <blockquote><details><summary>
 
