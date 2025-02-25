@@ -469,19 +469,24 @@ async function post_comment_on_repo(trigger_data, env) {
 }
 
 async function handleRequest(request, env) {
-    // redirect / to GitHub
-    if (request.url.indexOf("/trigger") === -1 &&
-        request.url.indexOf("/worker") === -1) {
+    // redirect /worker to Cloudflare Just-Some-Plugins/AutoRepo-Worker
+    if (request.url.indexOf("/worker") !== -1) {
         return Response.redirect(
-            "https://github.com/Just-Some-Plugins/AutoRepo-Worker",
+            "https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production",
             301
         );
     }
-    // redirect /worker to Cloudflare
-    if (request.url.indexOf("/trigger") === -1 &&
-        request.url.indexOf("/worker") !== -1) {
+    // redirect /actions to Just-Some-Plugins/AutoRepo
+    if (request.url.indexOf("/actions") !== -1) {
         return Response.redirect(
-            "https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/workers/services/view/autorepo-worker/production",
+            "https://github.com/Just-Some-Plugins/AutoRepo",
+            301
+        );
+    }
+    // redirect / to Just-Some-Plugins/AutoRepo-Worker
+    if (request.url.indexOf("/trigger") === -1) {
+        return Response.redirect(
+            "https://github.com/Just-Some-Plugins/AutoRepo-Worker",
             301
         );
     }
