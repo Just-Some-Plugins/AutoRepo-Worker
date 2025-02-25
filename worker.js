@@ -386,15 +386,15 @@ function parse_trigger(used_key, url, payload) {
     if ("test" in getParams) {
         trigger["branch_test"] = getParams["test"];
     }
-    // Fallback to make sure a branch is specified
-    if (main_and_test_not_set) {
-        trigger["branch_main"] = trigger["code_branch"];
-    }
     // Add branch to name when not main or test (or main and test not set)
     let branch_not_main_or_test = trigger["branch_main"] !== trigger["code_branch"]
         && trigger["branch_test"] !== trigger["code_branch"];
     if (branch_not_main_or_test || main_and_test_not_set) {
         trigger["target_name"] = trigger["target_name"] + " (" + trigger["code_branch"] + ")";
+    }
+    // Fallback to make sure a branch is specified
+    if (main_and_test_not_set) {
+        trigger["branch_main"] = trigger["code_branch"];
     }
 
     return trigger;
