@@ -476,6 +476,13 @@ async function handleRequest(request, env) {
             301
         );
     }
+    // redirect /pages to Cloudflare Just-Some-Plugins/AutoRepo-Web
+    if (request.url.indexOf("/pages") !== -1) {
+        return Response.redirect(
+            "https://dash.cloudflare.com/63b1f563383cda4e40867831c23f90dd/pages/view/autorepo-web",
+            301
+        );
+    }
     // redirect /trigger-issue to Just-Some-Plugins/AutoRepo/issues/1
     if (request.url.indexOf("/trigger-issue") !== -1) {
         return Response.redirect(
