@@ -476,6 +476,13 @@ async function handleRequest(request, env) {
             301
         );
     }
+    // redirect /trigger-issue to Just-Some-Plugins/AutoRepo/issues/1
+    if (request.url.indexOf("/trigger-issue") !== -1) {
+        return Response.redirect(
+            "https://github.com/Just-Some-Plugins/AutoRepo/issues/1",
+            301
+        );
+    }
     // redirect /actions to Just-Some-Plugins/AutoRepo
     if (request.url.indexOf("/actions") !== -1) {
         return Response.redirect(
