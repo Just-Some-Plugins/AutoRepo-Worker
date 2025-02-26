@@ -97,7 +97,8 @@ most recent comment regarding your plugin.
 
 You may also check the [latest build](https://github.com/Just-Some-Plugins/AutoRepo/actions)
 to see if the build script is failing for some reason with 
-your plugin.
+your plugin.\
+Some troubleshooting suggestions are in the [Build Script README](https://github.com/Just-Some-Plugins/AutoRepo#build-troubleshooting).
 
 Finally, you can copy the link to the specific trigger log 
 comment and post a new issue to AutoRepo with the link.
