@@ -18,6 +18,8 @@ trigger a build of the plugin there - which will fetch the
 fork and build it, then push the built fork to AutoRepo-Web 
 to go into a Custom Repo.
 
+This is the current state of that building: [![Parse and Process Trigger](https://github.com/Just-Some-Plugins/AutoRepo/actions/workflows/parse_trigger.yml/badge.svg)](https://github.com/Just-Some-Plugins/AutoRepo/actions/workflows/parse_trigger.yml)
+
 # Usage
 
 <blockquote><details><summary>
