@@ -354,7 +354,7 @@ function parse_trigger(used_key, url, payload) {
             }
         }
     } else {
-        branch = payload["ref"].substring(payload["ref"].lastIndexOf('/') + 1);
+        branch = payload["ref"].split('/').slice(2).join('/'); // trim "refs/heads/"
     }
 
     // Build base trigger data
